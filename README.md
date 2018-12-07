@@ -13,6 +13,8 @@ First you need to connect your oscilloscope to a suitable computer/laptop/smartp
 Now set your scope to XY-mode (mostly found near timebase control or display options) and start playing around.
 For drawings like this analog scopes will show a much nicer image than digital ones.
 
+To open the page either save [oscdraw.html](https://raw.githubusercontent.com/adlerweb/OSCDraw/master/oscdraw.html) to your pc and open in your favorite (but current) browser or just [use it online](https://adlerweb.github.io/OSCDraw/oscdraw.html).
+
 ### Drawing
 
 Open the page, move your cursor over the large square, press and hold your left mouse button and scribble away. Simple, huh?
