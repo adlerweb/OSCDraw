@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="255"
+   height="255"
+   viewBox="0 0 67.468749 67.468752"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.2 2405546, 2018-03-11"
+   sodipodi:docname="biba.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.6898437"
+     inkscape:cx="126.61073"
+     inkscape:cy="-11.693741"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     units="px"
+     inkscape:window-width="1278"
+     inkscape:window-height="1361"
+     inkscape:window-x="1280"
+     inkscape:window-y="25"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-229.53123)">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 30.835025,272.31035 -0.538215,0.34258 -15.970412,20.3153 -3.914316,-2.97488 16.792418,-21.05902 -3.796887,-3.48374 0.117429,-3.56203 1.584564,-2.52547 -18.4161248,-20.52985 0.6262907,-0.80318 -2.1528741,-2.05427 -2.8965942,-5.36262 5.1668978,3.56203 2.1528741,2.34859 0.6262905,-0.39143 17.966712,20.90245 1.370012,-0.9003 3.562027,-0.66543 1.83973,0.35229 0.842309,-0.82201 6.516603,-11.54723 3.757745,-4.57975 3.640312,6.69348 1.21344,0.11743 -3.875175,-6.85005 6.028047,-7.59378 3.366312,0.0391 4.07089,7.55463 -9.276929,12.17352 -9.39436,8.8855 -2.035444,0.31314 -0.939438,1.48744 1.95716,2.77917 -0.626292,2.11373 18.475576,24.07305 -0.548005,2.07458 -1.95716,1.48744 -2.583447,-0.15657 -21.137309,-21.80274"
+       id="BIBA"
+       inkscape:connector-curvature="0"
+       inkscape:label="#biba" />
+  </g>
+</svg>

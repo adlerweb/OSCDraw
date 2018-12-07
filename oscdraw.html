@@ -1,0 +1,273 @@
+<!doctype html>
+<html>
+  <head>
+
+    <!--
+      OSCDraw
+
+      2018 Florian Knodt · https://www.adlerweb.info
+      based on JS Oscilloscope by Neil Fraser · https://neil.fraser.name/news/2018/01/25/
+
+      Licensed under the Apache License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+    -->
+
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML5 JS OSCDraw</title>
+  </head>
+
+  <body>
+
+    <h1>JS Oscilloscope</h1>
+    <p>
+      Original code written by <a href="https://neil.fraser.name/news/2018/01/25/">Neil Fraser</a>.
+    </p>
+    <p>
+      Plug your computer's audio output into an oscilloscope (right = X, left = Y),
+      then use your mouse to draw in the square below.
+    </p>
+    <p>
+      If you are using different shapes try to keep end and start points as close as possible to avoid spurious lines. The more things you draw the more flicker you'll get. You can use Clear to start over. Using the text-Image you can set an image URL used as background which might help as a template. Using a lower sample rate might get a more stable and clean image but will show more flicker.
+    </p>
+
+    <p>
+      <canvas height=512 width=512 id="canvas" style="border: 1px solid #000; cursor: crosshair; background-size:cover;"></canvas>
+    </p>
+    <p>
+        <button onclick="cvclear()">Clear</button><br>
+        <label for="bgurl">Background Image URL: </label><input type="text" id="bgurl"> <button onclick="setBg()">Background</button><br>
+        <label for="srate">Sample rate:</label>
+        <select id="srate" onchange="play()">
+            <option>48000</option>
+            <option>44100</option>
+            <option>32000</option>
+            <option>22050</option>
+            <option>11025</option>
+            <option>8000</option>
+        </select>
+    </p>
+    <audio id="audio" controls loop></audio>
+    <h2>Data</h2>
+    <textarea id="data"></textarea>
+    <button onclick="cvimport()">Load</button>
+    <script>
+      var canvas, ctx;
+      var isDown = false;
+      var prevX = 0, currX = 0, prevY = 0, currY = 0;
+      var xData = [], yData = [];
+
+      var canvas = document.getElementById('canvas');
+      var ctx = canvas.getContext('2d');
+      ctx.canvas.width = window.innerWidth;
+      ctx.canvas.height = window.innerWidth;
+
+      ctx.strokeStyle = '#080';
+      ctx.lineWidth = 2;
+
+      canvas.addEventListener('mousemove', mousemove, false);
+      canvas.addEventListener('mousedown', mousedown, false);
+      canvas.addEventListener('mouseup', mouseup, false);
+      canvas.addEventListener('mouseout', mouseup, false);
+
+      function setBg() {
+        bgurl = document.getElementById('bgurl').value;
+        document.getElementById('canvas').style.backgroundImage = 'url('+bgurl+')';
+      }
+
+      function draw() {
+        ctx.lineTo(currX, currY);
+        ctx.stroke();
+
+        nx = (Math.round(255/canvas.width*currX))
+        ny = (255-Math.round(255/canvas.height*currY))
+
+        xData.push(nx);
+        yData.push(ny);
+        
+        console.log("X: " + nx + " - Y: " + ny)
+      }
+
+      function getXY() {
+        var x = 0;
+        var y = 0;
+        var o = canvas;
+        while (o) {
+          x += o.offsetLeft;
+          y += o.offsetTop;
+          o = o.offsetParent;
+        }
+        try {
+          x -= document.scrollingElement.scrollLeft;
+          y -= document.scrollingElement.scrollTop;
+        } catch (e) { /* MSIE? */}
+        return {x: x, y: y};
+      }
+
+      function mousemove(e) {
+        if (isDown) {
+          prevX = currX;
+          prevY = currY;
+          var xy = getXY();
+          currX = e.clientX - xy.x;
+          currY = e.clientY - xy.y;
+          draw();
+        }
+      }
+
+      function cvclear() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        xData.length = 0;
+        yData.length = 0;
+        document.getElementById('audio').pause();
+      }
+
+      function mousedown(e) {
+        // Initialize new drawing path.
+        prevX = currX;
+        prevY = currY;
+        var xy = getXY();
+        currX = e.clientX - xy.x;
+        currY = e.clientY - xy.y;
+        ctx.beginPath();
+
+        isDown = true;
+      }
+
+      function mouseup(e) {
+        if (isDown) {
+          isDown = false;
+          ctx.closePath();
+          if (xData.length > 1) {
+            play();
+          }
+        }
+      }
+
+      function repeatArray(array, n) {
+        // Return an array of length n,
+        // made of repeated copies of the input array.
+        var repeated = array.slice();
+        while (repeated.length < n) {
+          repeated = repeated.concat(repeated);
+        }
+        return repeated.slice(0, n);
+      }
+
+      function play() {
+        if(xData.length <= 1) return;
+
+        var length = 200000; //WAV length (actual seconds depend on sample rate)
+        var left = repeatArray(yData, length);
+        var right = repeatArray(xData, length);
+
+        // Play the sound.
+        var wav = makeWav(left, right);
+        var audio = document.getElementById('audio');
+        audio.src = 'data:audio/x-wav;base64,' + btoa(wav);
+        audio.play();
+
+        cvexport();
+      }
+
+      function makeWav(left, right) {
+        // Return a stereo WAV file built from the provided data arrays.
+        var min = Math.min(left.length, right.length);
+        var SubChunk2Size = min * 2;
+        // RIFF chunk descriptor.
+        var file = 'RIFF';
+        file += numToLong(36 + SubChunk2Size);  // ChunkSize
+        file += 'WAVE';
+        // The 'fmt ' sub-chunk.
+        file += 'fmt ';
+        file += numToLong(16);  // Subchunk1Size
+        file += numToShort(1);  // AudioFormat
+        file += numToShort(2);  // NumChannels
+
+        var srs = document.getElementById("srate");
+        var sr = parseInt(srs.options[srs.selectedIndex].value);
+
+        file += numToLong(sr);  // SampleRate
+        file += numToLong(sr * 2);  // ByteRate
+
+        file += numToShort(2);  // BlockAlign
+        file += numToShort(8);  // BitsPerSample
+
+        // The 'data' sub-chunk.
+        file += 'data';
+        file += numToLong(SubChunk2Size);
+        for (var i = 0; i < min; i++) {
+          file += numToChar(left[i]) + numToChar(right[i]);
+        }
+        return file;
+      }
+
+      function numToChar(num) {
+        // num is 0 - 255
+        return String.fromCharCode(num);
+      }
+
+      function numToShort(num) {
+        // num is 0 - 65536
+        var b0 = num % 256; // low
+        var b1 = (num - b0) / 256; // high
+        return String.fromCharCode(b0) + String.fromCharCode(b1);
+      }
+
+      function numToLong(num) {
+        // num is 0 - 4.2billion
+        var b0 = num % 256;
+        num = (num - b0) / 256;
+        var b1 = num % 256;
+        num = (num - b1) / 256;
+        var b2 = num % 256;
+        num = (num - b2) / 256;
+        var b3 = num;
+        return String.fromCharCode(b0) + String.fromCharCode(b1) +
+            String.fromCharCode(b2) + String.fromCharCode(b3);
+      }
+
+      function cvexport() {
+        document.getElementById('data').value = JSON.stringify(Array(yData, xData));
+      }
+
+      function cvimport() {
+        cvclear();
+
+        //try {
+          var indata = document.getElementById('data').value;
+          indata = JSON.parse(indata);
+          yData = indata[0];
+          xData = indata[1];
+
+          prevX = currX;
+          prevY = currY;
+
+          currX = (Math.round(canvas.width/255*xData[0]))
+          currY = (Math.round(canvas.height/255*(255-yData[0])))
+
+          ctx.beginPath();
+
+          for(var i=1; i<xData.length; i++) {
+            ctx.lineTo(Math.round(canvas.width/255*xData[i]), Math.round(canvas.height/255*(255-yData[i])));
+            ctx.stroke();
+          }
+
+          play();
+        /*} catch(err) {
+          alert('Import failed');
+        }*/
+      }
+    </script>
+  </body>
+</html>
+
