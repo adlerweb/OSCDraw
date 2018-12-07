@@ -23,43 +23,130 @@
 
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HTML5 JS OSCDraw</title>
+    <title>HTML5 JS OSC DRAW</title>
+    <style type="text/css">
+      * { 
+        padding: 0;
+        margin: 0;
+      }
+
+      html, body {
+          min-height: 100% !important;
+          height: 100%;
+          overflow: auto;
+      }
+
+      header {
+        max-height: 15%;
+        overflow: auto;
+      }
+
+      #container {
+        height: 70%;
+      }
+
+      #square{
+        margin: 0 auto;
+        width: 80vw;
+        max-width: 60vh;
+        height: 80vw;
+        max-height: 69vh;
+        font-size: 1rem;
+      }
+
+      #canvas{
+        flex: 1 0 auto;
+        height: 100%;
+        position: relative;
+        background-color: lightgray;
+
+        border: 1px solid black;
+        cursor: crosshair;
+
+        background-size:cover;
+      }
+
+      #canvas:after {
+        content: "";
+        float:left;
+        display: block;
+        padding-top: 100%;
+      }
+
+      footer {
+        width: 100%;
+        height: 15%;
+        display: table;
+      }
+
+      footer .row{
+        display: table-row;
+        height: 100%;
+      }
+
+      footer .fixheight {
+        height: 100%;
+      }
+
+      #controls, #export {
+        display: table-cell;
+        height: 100%;
+      }
+
+      #export #data {
+        width: 95%;
+        height: -moz-calc(100% - 5em);
+        height: -webkit-calc(100% - 5em);
+        height: calc(100% - 5em);
+      }
+    </style>
   </head>
-
   <body>
-
-    <h1>JS Oscilloscope</h1>
-    <p>
-      Original code written by <a href="https://neil.fraser.name/news/2018/01/25/">Neil Fraser</a>.
-    </p>
-    <p>
-      Plug your computer's audio output into an oscilloscope (right = X, left = Y),
-      then use your mouse to draw in the square below.
-    </p>
-    <p>
-      If you are using different shapes try to keep end and start points as close as possible to avoid spurious lines. The more things you draw the more flicker you'll get. You can use Clear to start over. Using the text-Image you can set an image URL used as background which might help as a template. Using a lower sample rate might get a more stable and clean image but will show more flicker.
-    </p>
-
-    <p>
-      <canvas height=512 width=512 id="canvas" style="border: 1px solid #000; cursor: crosshair; background-size:cover;"></canvas>
-    </p>
-    <p>
-        <button onclick="cvclear()">Clear</button><br>
-        <label for="bgurl">Background Image URL: </label><input type="text" id="bgurl"> <button onclick="setBg()">Background</button><br>
-        <label for="srate">Sample rate:</label>
-        <select id="srate" onchange="play()">
+    <header>
+      <h1>JS Oscilloscope</h1>
+      <p>
+        Original code written by <a href="https://neil.fraser.name/news/2018/01/25/">Neil Fraser</a>.
+      </p>
+      <p>
+        Plug your computer's audio output into an oscilloscope (right = X, left = Y),
+        then use your mouse to draw in the square below.
+      </p>
+      <p>
+        If you are using different shapes try to keep end and start points as close as possible to avoid spurious lines. The more things you draw the more flicker you'll get. You can use Clear to start over. Using the text-Image you can set an image URL used as background which might help as a template. Using a lower sample rate might get a more stable and clean image but will show more flicker.
+      </p>
+    </header>
+    <div id="container">
+      <div id="square">
+        <canvas id="canvas">
+        </canvas>
+      </div>
+    </div>
+    <footer>
+      <div class="row">
+        <div id="controls">
+          <button onclick="cvclear()">Clear</button><br><br>
+          <audio id="audio" controls loop></audio><br><br>
+          <label for="bgurl">Background Image URL: </label><input type="text" id="bgurl"> <button onclick="setBg()">Background</button><br><br>
+          <label for="srate">Sample rate:</label>
+          <select id="srate" onchange="play()">
             <option>48000</option>
             <option>44100</option>
             <option>32000</option>
             <option>22050</option>
             <option>11025</option>
             <option>8000</option>
-        </select>
-    </p>
-    <audio id="audio" controls loop></audio>
-    <h2>Data</h2>
-    <textarea id="data"></textarea>
-    <button onclick="cvimport()">Load</button>
+          </select>Hz
+        </div>
+        <div id="export">
+          <div class="fixheight">
+            <h2>Data</h2>
+            <textarea id="data"></textarea>
+            <button onclick="cvimport()">Load</button>
+          </div>
+        </div>
+      </div>
+    </footer>
+
     <script>
       var canvas, ctx;
       var isDown = false;
@@ -71,7 +158,7 @@
       ctx.canvas.width = window.innerWidth;
       ctx.canvas.height = window.innerWidth;
 
-      ctx.strokeStyle = '#080';
+      ctx.strokeStyle = '#383';
       ctx.lineWidth = 2;
 
       canvas.addEventListener('mousemove', mousemove, false);
@@ -94,7 +181,7 @@
         xData.push(nx);
         yData.push(ny);
         
-        console.log("X: " + nx + " - Y: " + ny)
+        console.log("cX: " + currX + " - cY: " + currY + " nX: " + nx + " - nY: " + ny)
       }
 
       function getXY() {
@@ -120,6 +207,10 @@
           var xy = getXY();
           currX = e.clientX - xy.x;
           currY = e.clientY - xy.y;
+
+          currX /= (canvas.offsetWidth / canvas.width);
+          currY /= (canvas.offsetHeight / canvas.height);
+
           draw();
         }
       }
@@ -243,7 +334,7 @@
       function cvimport() {
         cvclear();
 
-        //try {
+        try {
           var indata = document.getElementById('data').value;
           indata = JSON.parse(indata);
           yData = indata[0];
@@ -263,11 +354,10 @@
           }
 
           play();
-        /*} catch(err) {
+        } catch(err) {
           alert('Import failed');
-        }*/
+        }
       }
     </script>
   </body>
 </html>
-
